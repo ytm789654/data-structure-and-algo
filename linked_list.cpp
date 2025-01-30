@@ -1,26 +1,29 @@
 #include <iostream>
 #include <string>
+#include <vector>
 using namespace std;
 
+template <typename T>
 class Node
 {
 public:
-    Node(int _val):val(_val), next(nullptr){}
+    Node(T _val):val(_val), next(nullptr){}
     ~Node()
     {
         cout<<"Node with value "<<val<<" deleted."<<endl;
     }
 // member variable
-    int val;
-    Node* next;
+    T val;
+    Node<T>* next;
 };
 
+template <typename T>
 class LinkedList
 {
 public:
     void print_list()
     {
-        Node* p = head;
+        Node<T>* p = head;
         while(p!=nullptr)
         {
             cout<<p->val<<"->";
@@ -29,9 +32,9 @@ public:
         cout<<"tail"<<endl;
     }
 
-    void add_new_node(int val)
+    void add_new_node(T val)
     {
-        Node* new_node = new Node(val);
+        Node<T>* new_node = new Node<T> (val);
 
         // special handle for first node
         if(head == nullptr)
@@ -46,11 +49,11 @@ public:
         }
     }
 
-    void delete_node(int val)
+    void delete_node(T val)
     {
         if(head == nullptr)  return;
 
-        Node* p = head;
+        Node<T>* p = head;
         if(head->val == val)
         {
             head = p->next;
@@ -58,7 +61,7 @@ public:
         }
 
         p = p->next;
-        Node* last = head;
+        Node<T>* last = head;
         while(p != nullptr)
         {
             if(p->val == val)
@@ -79,12 +82,12 @@ public:
         if(head == nullptr) return;
         if(head == tail) return;
 
-        Node* p = head -> next;
-        Node* last = head;
+        Node<T>* p = head -> next;
+        Node<T>* last = head;
 
         while(p!=nullptr)
         {
-            Node* q = p;
+            Node<T>* q = p;
             p = p->next;
             q->next = last;
             last = q;
@@ -99,13 +102,13 @@ public:
     LinkedList():head(nullptr), tail(nullptr){}
 // member variable
 private:
-    Node* head;
-    Node* tail;
+    Node<T>* head;
+    Node<T>* tail;
 };
 
 int main()
 {
-    LinkedList L;
+    LinkedList<int> L;
     for(int i = 0;i<10; i++)
         L.add_new_node(i);
     L.print_list();
@@ -114,5 +117,15 @@ int main()
     L.print_list();
     L.reverve_list();
     L.print_list();
+
+    string num[10] = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"};
+    LinkedList<string> StringList;
+    for(int i = 0; i<10; i++)
+        StringList.add_new_node(num[i]);
+    StringList.print_list();
+    StringList.delete_node("five");
+    StringList.print_list();
+    StringList.reverve_list();
+    StringList.print_list();
     return 0;
 }
