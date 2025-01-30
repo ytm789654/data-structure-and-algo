@@ -77,7 +77,27 @@ public:
         }
     }
 
-    void reverve_list()
+    void reverse_recuise()
+    {
+        if(head == nullptr)
+            return ;
+        do_reverse(head, head->next);
+        head->next = nullptr;
+        auto tmp = head;
+        head = tail;
+        tail = tmp;
+    }
+
+    void do_reverse(Node<T>* p, Node<T>* q)
+    {
+        if(q == nullptr)
+            return ;
+        Node<T> *tmp = q->next;
+        q->next = p;
+        do_reverse(q, tmp);
+    }
+
+    void reverse_list()
     {
         if(head == nullptr) return;
         if(head == tail) return;
@@ -115,7 +135,7 @@ int main()
     L.delete_node(5);
     L.delete_node(0);
     L.print_list();
-    L.reverve_list();
+    L.reverse_list();
     L.print_list();
 
     string num[10] = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"};
@@ -125,7 +145,9 @@ int main()
     StringList.print_list();
     StringList.delete_node("five");
     StringList.print_list();
-    StringList.reverve_list();
+    StringList.reverse_list();
+    StringList.print_list();
+    StringList.reverse_recuise();
     StringList.print_list();
     return 0;
 }
