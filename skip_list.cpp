@@ -12,6 +12,10 @@ using namespace std;
 #define FOUND 0
 #define NEW_NODE 1
 #define LEVEL_UP_P 0.25
+#define MILLION 1000000
+
+class Node;
+Node* pool_ptr;
 
 class Node
 {
@@ -30,10 +34,16 @@ public:
 class SkipList
 {
 public:
+    Node* create_node(int key, string val, int level)
+    {
+        Node* ret = new(pool_ptr) Node(key, val, level);
+        pool_ptr++;
+        return ret;
+    }
     SkipList()
     {
-        _nil = new Node(INT_MAX, "nil", MAX_LEVEL);
-        _head = new Node(-1, "head", MAX_LEVEL);
+        _nil = create_node(INT_MAX, "nil", MAX_LEVEL);
+        _head = create_node(-1, "head", MAX_LEVEL);
         for(int i = 0; i<MAX_LEVEL; i++)
             _head->_forward[i] = _nil;
         _level = 0;
@@ -88,7 +98,7 @@ public:
         else
         {
             int new_node_level = get_level();
-            x_node = new Node(key, val, new_node_level);
+            x_node = create_node(key, val, new_node_level);
             if(new_node_level>_level)
             {
                 for(int i = _level + 1; i<=new_node_level; i++)
@@ -134,7 +144,7 @@ public:
                    update[i]->_forward[i] = x_node->_forward[i];
                 }
             }
-            delete x_node;
+            x_node->~Node();
             while(_level>0 && _head->_forward[_level] == _nil)
                 _level--;
             return FOUND;
@@ -189,11 +199,18 @@ string rand_str(int len)
     return ret;
 }
 
+void init_pool()
+{
+    pool_ptr = (Node*)malloc( (MILLION+10)*sizeof(Node));
+}
+
 int main()
 {
+    init_pool();
     SkipList sl;
-    const int test_freq = 1000000;
+    const int test_freq = MILLION;
 
+    cout<<"start skip list insert\n";
     for(int i = 1; i<=test_freq; i++)
         sl.insert_node(i, rand_str(5));
     
