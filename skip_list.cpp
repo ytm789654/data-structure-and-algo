@@ -4,6 +4,7 @@
 #include <map>
 #include <random>
 #include <map>
+#include <chrono>
 using namespace std;
 
 #define MAX_LEVEL 32
@@ -16,7 +17,12 @@ using namespace std;
 class Node
 {
 public:
-    Node(int key, string val, int level):_key(key),_val(val),_level(level)
+    Node(int key, string& val, int level):_key(key),_val(val),_level(level)
+    {
+        _forward = vector<Node*>(level + 1, nullptr);
+    }
+
+    Node(int key, string&& val, int level):_key(key),_val(val),_level(level)
     {
         _forward = vector<Node*>(level + 1, nullptr);
     }
@@ -62,9 +68,9 @@ public:
         };
     };
 
-    int insert_node(int key, string val)
+    int insert_node(int key, string& val)
     {
-        vector<Node*> update = vector<Node*>(_level+1, _head);
+        Node* update[MAX_LEVEL];
         int search_level = _level;
         Node* x_node = _head;
         while(search_level>=0)
@@ -92,7 +98,7 @@ public:
             if(new_node_level>_level)
             {
                 for(int i = _level + 1; i<=new_node_level; i++)
-                    update.push_back(_head);
+                    update[i] = _head;
                 _level = new_node_level;
             }
 
@@ -107,7 +113,7 @@ public:
 
     int delete_node(int key)
     {
-        vector<Node*> update = vector<Node*>(_level+1, _head);
+        Node* update[MAX_LEVEL];
         int search_level = _level;
         Node* x_node = _head;
         while(search_level>=0)
@@ -145,17 +151,16 @@ public:
         }
     }
 
-    int get_level()
-    {
-        random_device rd;
-        default_random_engine e(rd());
-        uniform_real_distribution<double> rand_generator(0, 1);
-        int ret = 0;
-        while(rand_generator(e) < LEVEL_UP_P && ret<MAX_LEVEL)
-            ret++;
-        if(ret>_level+1)
-            ret = _level+1;
-        return ret;
+    int get_level() {
+        static std::random_device rd;  // 静态初始化，避免重复创建
+        static std::mt19937 gen(rd()); // 静态初始化，避免重复创建
+        static std::uniform_real_distribution<> dis(0.0, 1.0); // 静态初始化
+
+        int level = 0;
+        while (dis(gen) < LEVEL_UP_P && level < MAX_LEVEL) {
+            level++;
+        }
+        return level;
     }
 
     void print_list()
@@ -194,14 +199,29 @@ int main()
     SkipList sl;
     const int test_freq = 1000000;
 
+    auto start = std::chrono::high_resolution_clock::now();
     for(int i = 1; i<=test_freq; i++)
-        sl.insert_node(i, rand_str(5));
-    
-    cout<<"skip list insert over\n";
+    {
+        string s = rand_str(5);
+        sl.insert_node(i, s);
+    }
+    auto end = std::chrono::high_resolution_clock::now();
+    // 计算时间差
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+    // 输出运行时间
+    std::cout << "Time taken by skip_list insert: "
+              << duration.count() << " microseconds" << std::endl;
 
     map<int, string> m;
+    start = std::chrono::high_resolution_clock::now();
     for(int i = 1; i<=test_freq; i++)
         m[i] = rand_str(5);
-    cout<<"map insert over\n";
+    end = std::chrono::high_resolution_clock::now();
+
+    duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    // 输出运行时间
+    std::cout << "Time taken by std::map insert: "
+              << duration.count() << " microseconds" << std::endl;
     return 0;
 }
